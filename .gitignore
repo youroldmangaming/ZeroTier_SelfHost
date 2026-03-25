@@ -1,0 +1,9 @@
+# Environment secrets — NEVER commit these
+.env
+
+# Docker volumes (if bind-mounted locally)
+data/
+
+# OS
+.DS_Store
+Thumbs.db
