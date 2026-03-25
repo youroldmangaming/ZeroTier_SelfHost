@@ -1,0 +1,49 @@
+version: "3.8"
+
+services:
+  zerotier:
+    image: zyclonite/zerotier:1.14.0
+    container_name: zerotier-controller
+    restart: unless-stopped
+    network_mode: host
+    cap_add:
+      - NET_ADMIN
+      - SYS_ADMIN
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    volumes:
+      - zerotier-data:/var/lib/zerotier-one
+    environment:
+      - ZEROTIER_API_SECRET=${ZEROTIER_API_SECRET:-}
+    healthcheck:
+      test: ["CMD", "zerotier-cli", "status"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
+  ztncui:
+    image: key-networks/ztncui:latest
+    container_name: zerotier-ui
+    restart: unless-stopped
+    depends_on:
+      zerotier:
+        condition: service_healthy
+    ports:
+      - "${ZTNCUI_PORT:-3000}:3000"
+    volumes:
+      - ztncui-data:/opt/key-networks/ztncui/etc
+    environment:
+      - ZTNCUI_PASSWD=${ZTNCUI_PASSWD:-admin_password_change_me}
+      - ZT_ADDR=localhost:9993
+      - ZT_TOKEN=${ZEROTIER_API_SECRET:-}
+      - NODE_ENV=production
+      - HTTP_PORT=3000
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+volumes:
+  zerotier-data:
+    driver: local
+  ztncui-data:
+    driver: local
