@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   zerotier:
     image: zyclonite/zerotier:1.14.0
@@ -13,37 +11,33 @@ services:
       - /dev/net/tun:/dev/net/tun
     volumes:
       - zerotier-data:/var/lib/zerotier-one
-    environment:
-      - ZEROTIER_API_SECRET=${ZEROTIER_API_SECRET:-}
     healthcheck:
       test: ["CMD", "zerotier-cli", "status"]
       interval: 30s
       timeout: 10s
-      retries: 3
-      start_period: 15s
+      retries: 5
+      start_period: 20s
 
-  ztncui:
-    image: key-networks/ztncui:latest
+  zero-ui:
+    image: dec0dos/zero-ui:latest
     container_name: zerotier-ui
     restart: unless-stopped
     depends_on:
       zerotier:
         condition: service_healthy
-    ports:
-      - "${ZTNCUI_PORT:-3000}:3000"
+    network_mode: host
     volumes:
-      - ztncui-data:/opt/key-networks/ztncui/etc
+      - zero-ui-data:/app/data
+      - zerotier-data:/var/lib/zerotier-one:ro
     environment:
-      - ZTNCUI_PASSWD=${ZTNCUI_PASSWD:-admin_password_change_me}
-      - ZT_ADDR=localhost:9993
-      - ZT_TOKEN=${ZEROTIER_API_SECRET:-}
-      - NODE_ENV=production
-      - HTTP_PORT=3000
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
+      - ZU_CONTROLLER_ENDPOINT=http://localhost:9993/
+      - ZU_SECURE_HEADERS=true
+      - ZU_DEFAULT_USERNAME=${ZU_DEFAULT_USERNAME:-admin}
+      - ZU_DEFAULT_PASSWORD=${ZU_DEFAULT_PASSWORD:-change_me_immediately}
+      - ZU_SERVE_FRONTEND=true
 
 volumes:
   zerotier-data:
     driver: local
-  ztncui-data:
+  zero-ui-data:
     driver: local
