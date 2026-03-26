@@ -31,7 +31,7 @@ services:
       - zerotier-data:/var/lib/zerotier-one:ro
     environment:
       - ZU_CONTROLLER_ENDPOINT=http://localhost:9993/
-      - ZU_SECURE_HEADERS=true
+      - ZU_SECURE_HEADERS=false
       - ZU_DEFAULT_USERNAME=${ZU_DEFAULT_USERNAME:-admin}
       - ZU_DEFAULT_PASSWORD=${ZU_DEFAULT_PASSWORD:-change_me_immediately}
       - ZU_SERVE_FRONTEND=true
